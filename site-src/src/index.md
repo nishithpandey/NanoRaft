@@ -2,30 +2,30 @@
 title: 'Home'
 ---
 
-# MicroRaft
+# NanoRaft
 
-![](img/microraft-logo.png){: style="height:192px;width:192px;float:right;"}
+![](img/nanoraft-logo.png){: style="height:192px;width:192px;float:right;"}
 
-MicroRaft is a feature-complete and stable open-source implementation of the
+NanoRaft is a feature-complete and stable open-source implementation of the
 Raft consensus algorithm in Java. It is released with
-<a href="https://github.com/MicroRaft/MicroRaft/blob/master/LICENSE"
+<a href="https://github.com/NanoRaft/NanoRaft/blob/master/LICENSE"
 target="_blank">the Apache 2 license</a>.
 
-MicroRaft works on top of a minimalistic and modular design. __It is a single
+NanoRaft works on top of a minimalistic and modular design. __It is a single
 lightweight JAR with a few hundred KBs of size and only logging dependency__. It
 contains an isolated implementation of the Raft consensus algorithm, and a set
 of accompanying interfaces to run the algorithm in a multi-threaded and
 distributed environment. These interfaces surround the Raft consensus algorithm,
 and abstract away the concerns of persistence, thread-safety, serialization,
 networking and actual state machine logic. Developers are required to implement
-these interfaces to build *CP* distributed systems on top of MicroRaft.
+these interfaces to build *CP* distributed systems on top of NanoRaft.
 
-You can read the [public announcement](blog/2021-09-03-introducing-microraft.md)
+You can read the [public announcement](blog/2021-09-03-introducing-nanoraft.md)
 here.
 
 ## Features
 
-MicroRaft is a complete implementation of the Raft consensus algorithm. It
+NanoRaft is a complete implementation of the Raft consensus algorithm. It
 implements the leader election, log replication, log compaction (snapshotting),
 and cluster membership changes components. Additionally, it realizes a rich set
 of optimizations and enhancements, as listed below, to allow developers to run
@@ -46,58 +46,58 @@ on their needs.
 
 ## Use cases
 
-MicroRaft can be used for building highly available and strongly consistent
+NanoRaft can be used for building highly available and strongly consistent
 data, metadata and coordination services.
 
 An example of data service is a distributed key-value store. You can build a
 distributed key-value store where each partition / shard is maintained by a
-separate Raft cluster (*Raft group* in MicroRaft terms).
+separate Raft cluster (*Raft group* in NanoRaft terms).
 
-MicroRaft can be also used for building a control plane or coordination cluster.
+NanoRaft can be also used for building a control plane or coordination cluster.
 It can store the metadata of your large-scale data services. High-level APIs,
 such as leader election mechanisms, group membership management systems,
 distributed locks, distributed transaction managers, or distributed resource
-schedulers can be also built on top of MicroRaft.
+schedulers can be also built on top of NanoRaft.
 
-__Please note that MicroRaft is not a high-level solution like a distributed
+__Please note that NanoRaft is not a high-level solution like a distributed
 key-value store, or a distributed lock service. It is a library that offers a
 set of abstractions and functionalities to help you build such high-level
 systems without intertwining your system with Raft code.__
 
 ## Get started
 
-Just run the following command on your terminal for a sneak peek at MicroRaft.
+Just run the following command on your terminal for a sneak peek at NanoRaft.
 It starts a 3-node local Raft group, elects a leader, and commits a number of
 operations.
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft && cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.tutorial.OperationCommitTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft && cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.tutorial.OperationCommitTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
-If you want to learn more about how to use MicroRaft for building a *CP*
+If you want to learn more about how to use NanoRaft for building a *CP*
 distributed system, you can check out the [Main
 Abstractions](docs/main-abstractions.md) section first, and then read the
 [tutorial](docs/tutorial-building-an-atomic-register.md) to build an atomic
-register on top of MicroRaft.
+register on top of NanoRaft.
 
-## Use MicroRaft in your project
+## Use NanoRaft in your project
 
-Add MicroRaft to your dependency list:
+Add NanoRaft to your dependency list:
 
 ~~~~{.xml}
 <dependency>
-    <groupId>io.microraft</groupId>
-    <artifactId>microraft</artifactId>
+    <groupId>io.nanoraft</groupId>
+    <artifactId>nanoraft</artifactId>
     <version>0.8</version>
 </dependency>
 ~~~~
 
 ## Get involved
 
-MicroRaft is a new open-source library. Your contribution and feedback is 
-welcome! The development happens on <a href="https://github.com/MicroRaft/MicroRaft"
-target="_blank">Github</a>. You can follow <a href="https://twitter.com/microraft" 
-target="_blank">@MicroRaft</a> on Twitter for announcements.
+NanoRaft is a new open-source library. Your contribution and feedback is 
+welcome! The development happens on <a href="https://github.com/NanoRaft/NanoRaft"
+target="_blank">Github</a>. You can follow <a href="https://twitter.com/nanoraft" 
+target="_blank">@NanoRaft</a> on Twitter for announcements.
 
 ## What is consensus?
 
@@ -139,12 +139,12 @@ John Ousterhout.
 
 ## Acknowledgements
 
-MicroRaft originates from Hazelcast IMDG's <a
+NanoRaft originates from Hazelcast IMDG's <a
 href="https://github.com/hazelcast/hazelcast/tree/master/hazelcast/src/main/java/com/hazelcast/cp/internal/raft"
 target="_blank">Raft implementation</a> and includes several significant
 improvements on the public APIs and internals.
 
-MicroRaft's logo is created by modifying <a
+NanoRaft's logo is created by modifying <a
 href="https://github.com/raft/logo/tree/3d2c4d5ca0d9c4fb8d5c28a82c4a43e576673b06"
 target="_blank"> Raft's original logo</a>. Raft's logo was created by Andrea
 Ruygt and licensed under <a href="https://creativecommons.org/licenses/by/4.0/"

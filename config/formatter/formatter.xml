@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <profiles version="11">
-  <profile kind="CodeFormatterProfile" name="MicroRaft formatter" version="11">
+  <profile kind="CodeFormatterProfile" name="NanoRaft formatter" version="11">
     <setting id="org.eclipse.jdt.core.formatter.blank_lines_after_package" value="1"/>
     <setting id="org.eclipse.jdt.core.formatter.tabulation.char" value="space"/>
     <setting id="org.eclipse.jdt.core.formatter.tabulation.size" value="4"/>

@@ -10,16 +10,16 @@
     <suppress checks="StrictDuplicateCode" files="\.java" lines="1-15"/>
 
     <!-- Exclude implementation classes from JavaDoc checks -->
-    <suppress checks="Javadoc(Package|Method|Type|Variable)" files="io[\\/]microraft[\\/]impl[\\/]"/>
-    <suppress checks="Javadoc(Package|Method|Type|Variable)" files="io[\\/]microraft[\\/]tutorial[\\/]"/>
-    <suppress checks="Javadoc(Package|Method|Type|Variable)" files="io[\\/]microraft[\\/]faulttolerance[\\/]"/>
+    <suppress checks="Javadoc(Package|Method|Type|Variable)" files="io[\\/]nanoraft[\\/]impl[\\/]"/>
+    <suppress checks="Javadoc(Package|Method|Type|Variable)" files="io[\\/]nanoraft[\\/]tutorial[\\/]"/>
+    <suppress checks="Javadoc(Package|Method|Type|Variable)" files="io[\\/]nanoraft[\\/]faulttolerance[\\/]"/>
 
     <suppress checks="LineLength" files="target[\\/]"/>
-    <suppress checks="LineLength" files="io[\\/]microraft[\\/]tutorial[\\/]"/>
-    <suppress checks="LineLength" files="io[\\/]microraft[\\/]faulttolerance[\\/]"/>
+    <suppress checks="LineLength" files="io[\\/]nanoraft[\\/]tutorial[\\/]"/>
+    <suppress checks="LineLength" files="io[\\/]nanoraft[\\/]faulttolerance[\\/]"/>
 
     <suppress checks="FileLength|MethodCount|ClassFanOutComplexity|ClassDataAbstractionCoupling"
-              files="io[\\/]microraft[\\/]impl[\\/]RaftNodeImpl"/>
+              files="io[\\/]nanoraft[\\/]impl[\\/]RaftNodeImpl"/>
 
     <!-- Suppress checks for tests -->
     <suppress checks="Javadoc|Name|MagicNumber|VisibilityModifier|MethodCount|NPathComplexity" files="[\\/]src[\\/]test[\\/]"/>

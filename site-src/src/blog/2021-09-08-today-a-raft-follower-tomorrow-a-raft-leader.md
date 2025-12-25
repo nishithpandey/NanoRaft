@@ -3,8 +3,8 @@
 
 _September 8, 2021 | Ensar Basri Kahveci_
 
-We start _the ins and outs of MicroRaft_ series with diving deep into how
-MicroRaft detects and acts upon leader failures.
+We start _the ins and outs of NanoRaft_ series with diving deep into how
+NanoRaft detects and acts upon leader failures.
 
 Readers are expected to have an understanding of how leader election works in
 Raft. <a href="https://raft.github.io/" target="_blank">Raft paper</a> already
@@ -14,11 +14,11 @@ for example <a href="http://thesecretlivesofdata.com/raft/" target="_blank">The
 Secret Lives of Data</a>.
 
 In this blog post, we follow <a
-href="https://microraft.io/docs/main-abstractions/" target="_blank" >the
-terminology used in MicroRaft</a>. In summary, a _Raft node_ runs the Raft
+href="https://nanoraft.io/docs/main-abstractions/" target="_blank" >the
+terminology used in NanoRaft</a>. In summary, a _Raft node_ runs the Raft
 consensus algorithm as a member of a _Raft group_. A Raft group is a cluster of
 Raft nodes that behave as a _replicated state machine_. <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/RaftNode.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/RaftNode.java"
 target="_blank">`RaftNode`</a>  interface contains APIs for handling client
 requests, Raft RPCs, etc.
 
@@ -77,8 +77,8 @@ probability. For instance, if election timeout is 10 seconds, it takes 10
 seconds to trigger leader election, and if it ends up with split vote, it takes
 more than 20 seconds to elect a new leader.
 
-MicroRaft chooses a more verbose approach and uses <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/RaftConfig.java"
+NanoRaft chooses a more verbose approach and uses <a
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/RaftConfig.java"
 target="_blank">2 timeout values</a> for leader election: _leader heartbeat
 timeout_ and _leader election timeout_. Leader heartbeat timeout is the duration
 for a follower to detect failure of the current leader and trigger leader
@@ -90,12 +90,12 @@ a leader crashes, it takes 10 seconds to trigger leader election. If the split
 vote situation occurs, a new leader election round starts after just 1 second,
 and the leader election logic completes after 11-12 seconds.
 
-There is also a third configuration parameter in MicroRaft: _leader heartbeat
+There is also a third configuration parameter in NanoRaft: _leader heartbeat
 period_. It is the period for a leader Raft node to send heartbeats to its
 followers in order to denote its liveliness. By default, a leader Raft node runs
-<a href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/impl/task/HeartbeatTask.java" target="_blank">a task</a> every 2 seconds. This task sends a heartbeat to each follower which did
+<a href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/impl/task/HeartbeatTask.java" target="_blank">a task</a> every 2 seconds. This task sends a heartbeat to each follower which did
 not receive an <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/model/message/AppendEntriesRequest.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/model/message/AppendEntriesRequest.java"
 target="_blank">`AppendEntriesRequest`</a> in the last 2 seconds.
 
 ## Dealing with disruptive followers
@@ -116,7 +116,7 @@ href="https://web.stanford.edu/~ouster/cgi-bin/papers/OngaroPhD.pdf"
 target="_blank">the Raft dissertation</a> describes a membership change scenario
 that could lead to the same problem.
 
-![Figure 1](https://microraft.io/img/blog2-fig1.png)
+![Figure 1](https://nanoraft.io/img/blog2-fig1.png)
 
 Figure 1
 
@@ -124,10 +124,10 @@ The Raft dissertation sketches out a solution to this problem, and Henrik Ingo
 details the solution in his <a
 href="https://www.openlife.cc/sites/default/files/php_uploads/4-modifications-for-Raft-consensus.pdf"
 target="_blank">Four modifications of the Raft consensus algorithm</a> work. The
-idea is to add _a pre-voting_ step before triggering leader election. MicroRaft
+idea is to add _a pre-voting_ step before triggering leader election. NanoRaft
 implements this. When the leader heartbeat timeout elapses, a follower Raft node
 sends <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/model/message/PreVoteRequest.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/model/message/PreVoteRequest.java"
 target="_blank">`PreVoteRequest`</a> to other Raft nodes for the next term
 without actually incrementing its local term. Other Raft nodes respond as if it
 was an actual _RequestVote RPC_. They grant a _non-binding pre-vote_ only if the
@@ -148,11 +148,11 @@ election round on the next term, and become the new leader. So pre-voting does
 not help to prevent an unnecessary leader election in this case and we get an
 unavailability window.
 
-![Figure 2](https://microraft.io/img/blog2-fig2.png)
+![Figure 2](https://nanoraft.io/img/blog2-fig2.png)
 
 Figure 2
 
-MicroRaft resolves this issue by relying on the heartbeat mechanism. Raft nodes
+NanoRaft resolves this issue by relying on the heartbeat mechanism. Raft nodes
 ignore pre-vote requests if they think there is a live leader. A leader is
 considered alive if it has sent a heartbeat in the last leader heartbeat timeout
 duration. This solution is called _leader stickiness_ and explained in both the
@@ -160,7 +160,7 @@ Raft dissertation and Henrik Ingo's work.
 
 ## Stepping down an overthrown leader
 
-Figure 3 demonstrates another case which is handled by MicroRaft to prevent
+Figure 3 demonstrates another case which is handled by NanoRaft to prevent
 partial unavailability in case of network problems. Suppose a leader Raft node
 is partitioned from the rest of its Raft group. Eventually, the other Raft nodes
 elect a new leader among themselves. However, since they are disconnected from
@@ -169,28 +169,28 @@ information. This situation causes clients connected to the old leader to
 observe unavailability because the old leader neither fails nor commits their
 requests.
 
-![Figure 3](https://microraft.io/img/blog2-fig3.png)
+![Figure 3](https://nanoraft.io/img/blog2-fig3.png)
 
 Figure 3
 
-MicroRaft resolves this issue by relying on the heartbeat mechanism in a way
+NanoRaft resolves this issue by relying on the heartbeat mechanism in a way
 similar to the leader stickiness solution described above. The solution is also
 described in Section 6.2 of the Raft dissertation. It is called _Check Quorum_.
 A leader Raft node keeps track of _AppendEntries RPC_ responses sent by
 followers. It steps down if the leader heartbeat timeout elapses before it
 receives _AppendEntries RPC_ responses from the majority of the Raft group. It
 also fails pending requests with <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/exception/IndeterminateStateException.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/exception/IndeterminateStateException.java"
 target="_blank">`IndeterminateStateException`</a> and new requests with <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/exception/NotLeaderException.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/exception/NotLeaderException.java"
 target="_blank">`NotLeaderException`</a> so that clients can retry their
 requests on the other Raft nodes.
 
 ## Sum up
 
-MicroRaft's leader failure handling behavior is summarized below.
+NanoRaft's leader failure handling behavior is summarized below.
 
-- MicroRaft realizes leader election logic with 2 configuration parameters,
+- NanoRaft realizes leader election logic with 2 configuration parameters,
   _leader heartbeat timeout_ and _leader election timeout_. Leader heartbeat
   timeout is the duration for a follower to detect failure of the current leader
   and trigger leader election. Leader election timeout is the duration
@@ -199,7 +199,7 @@ MicroRaft's leader failure handling behavior is summarized below.
   minimize unnecessary leader elections and delays caused by split votes.
 
 - Pre-voting and leader stickiness prevent unavailability when there are
-  disruptive Raft nodes in a Raft group. MicroRaft ensures that a new leader
+  disruptive Raft nodes in a Raft group. NanoRaft ensures that a new leader
   election is started only if the majority of the Raft group thinks the current
   leader has failed.
 

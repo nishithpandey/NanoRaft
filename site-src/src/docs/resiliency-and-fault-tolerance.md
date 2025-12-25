@@ -2,18 +2,18 @@
 # Resiliency and Fault Tolerance
 
 In this section, we will walk through different types of failure scenarios and
-discuss how MicroRaft handles each one of them. We will use MicroRaft's <a
-href="https://github.com/MicroRaft/MicroRaft/tree/master/microraft/src/test/java/io/microraft/impl/local"
+discuss how NanoRaft handles each one of them. We will use NanoRaft's <a
+href="https://github.com/NanoRaft/NanoRaft/tree/master/nanoraft/src/test/java/io/nanoraft/impl/local"
 target="_blank">local testing utilities</a> to demonstrate those failure
-scenarios. These utilities are mainly used for testing MicroRaft to a great
+scenarios. These utilities are mainly used for testing NanoRaft to a great
 extent without a distributed setting. Here, we will use them to run a Raft group
 in a single JVM process and inject different types of failures into the system.
 
 ![](/img/info.png){: style="height:25px;width:25px"} In terms of safety, the
-fundamental guarantee of the Raft consensus algorithm and hence MicroRaft is,
+fundamental guarantee of the Raft consensus algorithm and hence NanoRaft is,
 operations are committed in a single global order, and a committed operation is
 never lost, as long as there is no Byzantine failure in the system. In
-MicroRaft, restarting a Raft node that has no persistence layer with the same
+NanoRaft, restarting a Raft node that has no persistence layer with the same
 identity or restarting it with a corrupted persistence state are examples of
 Byzantine failure.
 
@@ -29,14 +29,14 @@ Even if the majority of a Raft group is alive, we may encounter unavailability
 issues if the Raft group is under high load and cannot keep up with the request
 rate. In this case, the leader Raft node temporarily stops accepting new
 requests and notifies the futures returned from the `RaftNode` methods with <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/exception/CannotReplicateException.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/exception/CannotReplicateException.java"
 target="_blank">`CannotReplicateException`</a>. This exception means that there
 are too many operations pending to be committed in the leader's local Raft log,
 or too many queries pending to be executed, so it temporarily rejects accepting
 new requests. Clients should apply some backoff before retrying their requests.
 
 We will demonstrate this scenario in a test below with a 3-node Raft group. In
-MicroRaft, a leader does not replicate log entries one by one. Instead, it keeps
+NanoRaft, a leader does not replicate log entries one by one. Instead, it keeps
 a buffer for incoming requests and replicates the log entries to the followers
 in batches in order to improve the throughput. Once this buffer is filled up,
 the leader stops accepting new requests. In this test, we allow the pending log
@@ -50,13 +50,13 @@ requests to the leader. After some time, our requests fail with
 To run this test on your machine, try the following:
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft
-$ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.faulttolerance.HighLoadTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft
+$ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.faulttolerance.HighLoadTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/test/java/io/microraft/faulttolerance/HighLoadTest.java"
-target="_blank">MicroRaft Github repository</a>.
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/test/java/io/nanoraft/faulttolerance/HighLoadTest.java"
+target="_blank">NanoRaft Github repository</a>.
 
 -----
 
@@ -87,7 +87,7 @@ Raft node back. __Please note that terminating a Raft node manually without a
 persistence layer implementation is equivalent to a crash since there is no way
 to restore the Raft node back with its Raft state.__
 
-MicroRaft provides a basic in-memory `RaftStore` implementation to enable
+NanoRaft provides a basic in-memory `RaftStore` implementation to enable
 crash-recovery testing. In the following code sample, we use this utility, i.e.,
 `InMemoryRaftStore`, to demonstrate how to recover from Raft node failures.
 
@@ -96,12 +96,12 @@ crash-recovery testing. In the following code sample, we use this utility, i.e.,
 To run this test on your machine, try the following:
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft
-$ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.faulttolerance.RestoreCrashedRaftNodeTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft
+$ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.faulttolerance.RestoreCrashedRaftNodeTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the 
-<a href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/test/java/io/microraft/faulttolerance/RestoreCrashedRaftNodeTest.java" target="_blank">MicroRaft Github repository</a>.
+<a href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/test/java/io/nanoraft/faulttolerance/RestoreCrashedRaftNodeTest.java" target="_blank">NanoRaft Github repository</a>.
 
 This time we provide a factory object to enable `LocalRaftGroup` to create
 `InMemoryRaftStore` objects while configuring our Raft nodes. Hence, after we
@@ -128,7 +128,7 @@ the Raft log, i.e., automatically applies all the log entries up to the commit
 index. We should be careful about operations that have side effects because the
 Raft log replay process triggers those side effects again. Please refer to the
 <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/statemachine/StateMachine.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/statemachine/StateMachine.java"
 target="_blank">State Machine</a> for more details.
 
 -----
@@ -151,7 +151,7 @@ a client cannot communicate with an alive leader because of an environmental
 issue, such as a network problem, it cannot replicate new operations, or run
 `QueryPolicy.LINEARIZABLE` and `QueryPolicy.LEADER_LOCAL` queries. It means that
 the Raft group is unavailable for this particular client. This is due to
-MicroRaft's simplicity-oriented design philosophy. In MicroRaft, when a follower
+NanoRaft's simplicity-oriented design philosophy. In NanoRaft, when a follower
 Raft node receives an API call that requires the leadership role, it does not
 internally forward the call to the leader Raft node. Instead, it fails the call
 with `NotLeaderException`. Please note that this mechanism can be also used for
@@ -178,7 +178,7 @@ passed to `RaftNode.replicate()`, there are multiple possibilities:
 ![](/img/warning.png){: style="height:25px;width:25px"} It is up to the client
 to retry an operation whose result is not received, because a retry could cause
 the operation to be committed twice based on the actual failure scenario.
-MicroRaft goes for simplicity and does not employ deduplication (I have plans to
+NanoRaft goes for simplicity and does not employ deduplication (I have plans to
 implement an opt-in deduplication mechanism in future). If deduplication is
 needed, it can be done inside `StateMachine` implementations for now.
 
@@ -199,13 +199,13 @@ new leader, we see that there are 2 values applied to the state machine.
 To run this test on your machine, try the following:
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft
-$ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.faulttolerance.RaftLeaderFailureTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft
+$ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.faulttolerance.RaftLeaderFailureTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/test/java/io/microraft/faulttolerance/RaftLeaderFailureTest.java"
-target="_blank">MicroRaft Github repository</a>.
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/test/java/io/nanoraft/faulttolerance/RaftLeaderFailureTest.java"
+target="_blank">NanoRaft Github repository</a>.
 
 ![](/img/info.png){: style="height:25px;width:25px"} Another trick could be
 designing our operations in an idempotent way and retry them automatically on
@@ -220,7 +220,7 @@ idempotent.
 Failure of the majority causes the Raft group to lose its availability and stop
 handling new requests. The only recovery option is to recover some of failed
 Raft nodes so that the majority becomes available again. Otherwise, the Raft
-group cannot be recovered. MicroRaft does not support any unsafe recovery policy
+group cannot be recovered. NanoRaft does not support any unsafe recovery policy
 for now. 
 
 The duration of unavailability depends on how long the majority Raft nodes
@@ -229,7 +229,7 @@ linearizable queries in the meantime. However, we can still run local queries
 because `QueryPolicy.EVENTUAL_CONSISTENCY` does not require availability of 
 the majority.
 
-In MicroRaft, on each heartbeat tick a leader Raft node checks if it is still in
+In NanoRaft, on each heartbeat tick a leader Raft node checks if it is still in
 charge, i.e, it has received _Append Entries RPC_ responses from `majority
 quorum size - 1` (majority quorum size minus the leader itself) in the last
 _leader heartbeat timeout_ period. For instance, in a 3-node Raft group with 5
@@ -238,19 +238,19 @@ as long as at least 1 follower has sent an _Append Entries RPC_ response in the
 last 5 seconds. Otherwise, the leader Raft node demotes itself to the follower
 role and fails pending (i.e., locally appended but not yet committed) operations
 with <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/exception/IndeterminateStateException.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/exception/IndeterminateStateException.java"
 target="_blank">`IndeterminateStateException`</a>. This behaviour is due to the
 asynchronous nature of distributed systems. When the leader cannot get _Append
 Entries RPC_ responses from some of its followers, it may not accurately decide
 if those followers are actually crashed, or just temporarily unreachable. If
 those unresponsive followers are actually alive and can form the majority, they
 can also elect a new leader among themselves and commit operations replicated by
-the previous leader. Hence, MicroRaft takes a defensive approach here and makes
+the previous leader. Hence, NanoRaft takes a defensive approach here and makes
 a leader Raft node step down from the leadership role.  
 
 ![](/img/warning.png){: style="height:25px;width:25px"} It is up to the client
 to retry an operation which is notified with `IndeterminateStateException`,
-because a retry could cause the operation to be committed twice. MicroRaft goes
+because a retry could cause the operation to be committed twice. NanoRaft goes
 for simplicity and does not employ deduplication (I have plans to implement an
 opt-in deduplication mechanism in future). If deduplication is needed, it can be
 done inside `StateMachine` implementations for now.
@@ -287,12 +287,12 @@ availability as long as there is a leader Raft node taking to the majority
 To run this test on your machine, try the following:
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft
-$ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.faulttolerance.MajorityFailureTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft
+$ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.faulttolerance.MajorityFailureTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the 
-<a href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/test/java/io/microraft/faulttolerance/MajorityFailureTest.java" target="_blank">MicroRaft Github repository</a>.
+<a href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/test/java/io/nanoraft/faulttolerance/MajorityFailureTest.java" target="_blank">NanoRaft Github repository</a>.
 
 ![](/img/warning.png){: style="height:25px;width:25px"} Please note that you
 need to have a persistence-layer (i.e., `RaftStore` implementation) to make this
@@ -328,7 +328,7 @@ The Raft nodes that was on the minority side of the network partition catch up
 with the other Raft nodes, and the Raft group continues its normal operation.
 
 ![](/img/info.png){: style="height:25px;width:25px"} __One of the key points of
-the Raft consensus algorithm's and hence MicroRaft's network partition behaviour
+the Raft consensus algorithm's and hence NanoRaft's network partition behaviour
 is the absence of _split-brain_. In any network partition scenario, there can be
 at most one functional leader.__
 
@@ -347,12 +347,12 @@ Phew!
 To run this test on your machine, try the following:
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft
-$ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.faulttolerance.NetworkPartitionTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft
+$ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.faulttolerance.NetworkPartitionTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the 
-<a href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/test/java/io/microraft/faulttolerance/NetworkPartitionTest.java" target="_blank">MicroRaft Github repository</a>.
+<a href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/test/java/io/nanoraft/faulttolerance/NetworkPartitionTest.java" target="_blank">NanoRaft Github repository</a>.
 
 -----
 
@@ -367,7 +367,7 @@ operation for the same log index with the lost operation and breaks the safety
 property of the Raft consensus algorithm.
 
 ![](/img/warning.png){: style="height:25px;width:25px"} <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/persistence/RaftStore.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/persistence/RaftStore.java"
 target="_blank">`RaftStore`</a> documents all the durability and integrity
 guarantees required by its implementations. Hence, it is the responsibility of
 `RaftStore` implementations to ensure durability and integrity of the persisted

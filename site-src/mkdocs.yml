@@ -1,8 +1,8 @@
-site_name: MicroRaft
-site_description: "MicroRaft: Java implementation of the Raft consensus algorithm"
-site_url: https://microraft.io
+site_name: NanoRaft
+site_description: "NanoRaft: Java implementation of the Raft consensus algorithm"
+site_url: https://nanoraft.io
 site_author: "Ensar Basri Kahveci"
-copyright: 'MicroRaft, 2021. Open-sourced by <a href="https://twitter.com/metanet" target="_blank">Ensar Basri Kahveci</a>.<br/>MicroRaft is not affiliated, associated, endorsed by, or in any way officially connected with<br/>Facebook, or any of its subsidiaries or its affiliates.'
+copyright: 'NanoRaft, 2021. Open-sourced by <a href="https://twitter.com/metanet" target="_blank">Ensar Basri Kahveci</a>.<br/>NanoRaft is not affiliated, associated, endorsed by, or in any way officially connected with<br/>Facebook, or any of its subsidiaries or its affiliates.'
 docs_dir: src
 use_directory_urls: true
 theme: flatly
@@ -28,14 +28,14 @@ nav:
       - "Javadoc 0.7": "javadoc/0.7/index.html"
       - "Javadoc 0.6": "javadoc/0.6/index.html"
       - "Javadoc 0.5": "javadoc/0.5/index.html"
-      - Release Notes: https://github.com/MicroRaft/MicroRaft/releases
+      - Release Notes: https://github.com/NanoRaft/NanoRaft/releases
       - Roadmap: "docs/roadmap.md"
   - "Blog":
-      - "April 5, 2023 | Queries in MicroRaft": "blog/2023-04-05-queries.md"
-      - "February 15, 2023 | Log replication in MicroRaft": "blog/2023-02-15-log-replication.md"
+      - "April 5, 2023 | Queries in NanoRaft": "blog/2023-04-05-queries.md"
+      - "February 15, 2023 | Log replication in NanoRaft": "blog/2023-02-15-log-replication.md"
       - "November 12, 2022 | Implementing the log": "blog/2022-11-12-implementing-the-log.md"
       - "September 8, 2021 | Today a Raft Follower, Tomorrow a Raft Leader": "blog/2021-09-08-today-a-raft-follower-tomorrow-a-raft-leader.md"
-      - "September 3, 2021 | Introducing MicroRaft": "blog/2021-09-03-introducing-microraft.md"
+      - "September 3, 2021 | Introducing NanoRaft": "blog/2021-09-03-introducing-nanoraft.md"
       - "All Blog Posts": "blog"
-  - "Github": "https://github.com/MicroRaft/MicroRaft"
-  - "Twitter": "https://twitter.com/MicroRaft"
+  - "Github": "https://github.com/NanoRaft/NanoRaft"
+  - "Twitter": "https://twitter.com/NanoRaft"

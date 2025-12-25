@@ -1,12 +1,12 @@
 
-# Log replication in MicroRaft
+# Log replication in NanoRaft
 
 _February 15, 2023 | Ensar Basri Kahveci_
 
-This article is the third in _the ins and outs of MicroRaft_ series. Here we
-uncover how log replication is done in MicroRaft.
+This article is the third in _the ins and outs of NanoRaft_ series. Here we
+uncover how log replication is done in NanoRaft.
 
-MicroRaft replicates a log entry as follows:
+NanoRaft replicates a log entry as follows:
 
 1. A client sends a request to the leader Raft node. This request contains an
    operation that is going to executed on the state machine once committed.
@@ -26,44 +26,44 @@ MicroRaft replicates a log entry as follows:
 
 These steps must be executed serially for a single log entry. However, if we
 execute the whole process for only one log entry at a time, we end up with a
-sub-optimal performance. Hence, MicroRaft employs a number of techniques to 
+sub-optimal performance. Hence, NanoRaft employs a number of techniques to 
 commit log entries in a performant manner. In this article, we describe these
 techniques.
 
 ## Handling client requests
 
-MicroRaft's main abstraction is [`RaftNode`](https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/RaftNode.java). Clients talk to the leader Raft node
+NanoRaft's main abstraction is [`RaftNode`](https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/RaftNode.java). Clients talk to the leader Raft node
 to replicate their operations. Raft node runs in a single-threaded manner and
 executes the Raft consensus algorithm with the <a
 href="https://en.wikipedia.org/wiki/Actor_model" target="_blank">Actor
 model</a>. It uses another abstraction -with a default implementation- for this
-purpose: [`RaftNodeExecutor`](https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/executor/RaftNodeExecutor.java). Raft node submits tasks to its `RaftNodeExecutor` to
+purpose: [`RaftNodeExecutor`](https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/executor/RaftNodeExecutor.java). Raft node submits tasks to its `RaftNodeExecutor` to
 handle API calls made by clients, RPC messages and responses sent by other Raft
 nodes, and internal logic related to the execution of the Raft consensus
 algorithm.
 
-Raft nodes send RPC requests and responses to each other via [`Transport`](https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/transport/Transport.java).
+Raft nodes send RPC requests and responses to each other via [`Transport`](https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/transport/Transport.java).
 `Transport` is expected to realize networking outside of the Raft thread (i.e.,
 `RaftNodeExecutor`'s internal thread). Similarly, the communication between
 clients and Raft nodes happens outside of the Raft thread. You can learn more
-about MicroRaft's main abstractions and threading model <a href="https://microraft.io/docs/main-abstractions/"
+about NanoRaft's main abstractions and threading model <a href="https://nanoraft.io/docs/main-abstractions/"
 target="_blank">here</a>.
 
 Figure 1 depicts the case when a client calls `RaftNode.replicate()` for an
-operation. Upon this API call, Raft node creates an instance of [`ReplicateTask`](https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/impl/task/ReplicateTask.java)
+operation. Upon this API call, Raft node creates an instance of [`ReplicateTask`](https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/impl/task/ReplicateTask.java)
 and puts the task into the task queue of its `RaftNodeExecutor`.
 `RaftNodeExecutor`'s internal thread executes the tasks submitted to its task
 queue.
 
-![Figure 1](https://microraft.io/img/blog4-fig1.png){#id .class width=348px height=198px}
+![Figure 1](https://nanoraft.io/img/blog4-fig1.png){#id .class width=348px height=198px}
 
 When a `ReplicateTask` instance is executed by the leader Raft node, it creates a
 new log entry for the client's operation, appends it the leader's log and sends
-[`AppendEntriesRequest`](https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/model/message/AppendEntriesRequest.java)s to the followers.
+[`AppendEntriesRequest`](https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/model/message/AppendEntriesRequest.java)s to the followers.
 
-You can check the previous article to learn how MicroRaft implements the log.
+You can check the previous article to learn how NanoRaft implements the log.
 For this article, it is enough for you to know that the log consists of 2
-components: [`RaftLog`](https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/impl/log/RaftLog.java) and [`RaftStore`](https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/persistence/RaftStore.java). `RaftLog` keeps log entries in memory and
+components: [`RaftLog`](https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/impl/log/RaftLog.java) and [`RaftStore`](https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/persistence/RaftStore.java). `RaftLog` keeps log entries in memory and
 `RaftStore` writes them to disk.
 
 ## Batching
@@ -75,7 +75,7 @@ consecutive log entries into an AppendEntriesRequest. This approach enables
 the leader to utilize the network better. It also enables followers to amortize
 the cost of disk writes. We elaborate this in the next section.
 
-MicroRaft implements the batching policy described in the Section 10.2.2 of the
+NanoRaft implements the batching policy described in the Section 10.2.2 of the
 Raft dissertation. After the leader Raft node sends an AppendEntriesRequest to a
 follower, it does not send another AppendEntriesRequest until the follower
 responds back. It can append new log entries into its local log in the
@@ -84,8 +84,8 @@ follower's match index and sends all accumulated log entries in a new
 AppendEntriesRequest. This simple yet effective policy dynamically adapts batch
 sizes to the request rate.
 
-MicroRaft limits the maximum number of log entries in AppendEntriesRequests via
-[`RaftConfig.getAppendEntriesRequestBatchSize()`](https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/RaftConfig.java). This is to prevent the leader
+NanoRaft limits the maximum number of log entries in AppendEntriesRequests via
+[`RaftConfig.getAppendEntriesRequestBatchSize()`](https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/RaftConfig.java). This is to prevent the leader
 from saturating the network with large messages and causing the followers to
 suspect its liveliness.
 
@@ -117,14 +117,14 @@ passes them to `RaftStore.persistLogEntry()` and then makes a final
 `RaftStore.flush()` call to ensure their durability. By this way, followers
 amortize the cost of disk writes.
 
-![Figure 2](https://microraft.io/img/blog4-fig2.png){#id .class width=348px height=198px}
+![Figure 2](https://nanoraft.io/img/blog4-fig2.png){#id .class width=348px height=198px}
 
-MicroRaft also employs the technique described in the Section 10.2.1 of the Raft
+NanoRaft also employs the technique described in the Section 10.2.1 of the Raft
 dissertation to amortize the cost of disk writes on the leader. When the
 leader's Raft thread executes a `ReplicateTask`, it appends the new log entry to
 the in-memory `RaftLog`, but does not immediately flush the disk write via
 `RaftStore`. Instead, as Figure 2 demonstrates, it submits another task to perform
-the flush: [`LeaderFlushTask`](https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/impl/task/LeaderFlushTask.java). This task usually comes after multiple `ReplicateTask`
+the flush: [`LeaderFlushTask`](https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/impl/task/LeaderFlushTask.java). This task usually comes after multiple `ReplicateTask`
 instances already submitted to the task queue by other clients. Therefore it
 flushes all disk writes buffered until its execution.
 
@@ -147,7 +147,7 @@ benefit if the cost of disk writes is significantly greater than networking.
 Therefore, the overall improvement on performance highly relies on the effective
 integration of batching and pipelining.
 
-MicroRaft utilizes the concurrency between the leader and followers to improve
+NanoRaft utilizes the concurrency between the leader and followers to improve
 performance. For instance, the leader can append new log entries, advance the
 commit index, or execute queries while followers are processing
 `AppendEntriesRequest`s. However, since the leader maintains a single outstanding
@@ -161,6 +161,6 @@ log entries. This strong leader-oriented approach simplifies several aspects of
 the solution to the consensus problem. However, it also causes the leader to
 become bottleneck very easily. Therefore it is very important to apply several
 techniques to replicate log entries in a performant manner. In this article, we
-investigated the techniques implemented in MicroRaft. Of course, we are not done
+investigated the techniques implemented in NanoRaft. Of course, we are not done
 yet. We still have a few more tricks in the tank to improve performance of log
 replication!

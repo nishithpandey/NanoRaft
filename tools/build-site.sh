@@ -1,7 +1,7 @@
 #!/bin/bash
 
 if [ -z "$1" ]; then
-  echo "usage: build-site.sh microraft-version"
+  echo "usage: build-site.sh nanoraft-version"
   exit 1
 fi
 
@@ -14,7 +14,7 @@ try() { "$@" || die "cannot $*"; }
 
 MICRORAFT_VERSION=$1
 GRADLE_FILE=build.gradle.kts
-JAVADOC_SOURCE=microraft/build/docs/javadoc
+JAVADOC_SOURCE=nanoraft/build/docs/javadoc
 SITE_FILES_DIR=site-src
 SITE_DIR=${SITE_FILES_DIR}/site
 JAVADOC_TARGET=${SITE_DIR}/javadoc/${MICRORAFT_VERSION}
@@ -22,11 +22,11 @@ JAVADOC_TARGET=${SITE_DIR}/javadoc/${MICRORAFT_VERSION}
 BUILD_SITE_CMD="${MKDOCS_CMD} build"
 
 if [ ! -f "$GRADLE_FILE" ]; then
-  echo "Please run this script on the root directory of the MicroRaft repository."
+  echo "Please run this script on the root directory of the NanoRaft repository."
   exit 1
 fi
 
-try ./gradlew :microraft:javadoc
+try ./gradlew :nanoraft:javadoc
 try test -d ${JAVADOC_SOURCE}
 
 rm -rf $SITE_DIR

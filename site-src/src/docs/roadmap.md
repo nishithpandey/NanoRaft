@@ -2,13 +2,13 @@
 
 I am planning to work on the following tasks in the future, but have no strict
 plans about their timeline. If you have ideas, just [chime
-in](https://join.slack.com/t/microraft/shared_invite/zt-dc6utpfk-84P0VbK7EcrD3lIme2IaaQ)!
+in](https://join.slack.com/t/nanoraft/shared_invite/zt-dc6utpfk-84P0VbK7EcrD3lIme2IaaQ)!
 
 - Opt-in deduplication mechanism via implementation of the [Implementing
   Linearizability at Large Scale and Low
   Latency](https://dl.acm.org/doi/10.1145/2815400.2815416) paper. Currently, one
   can implement deduplication inside his custom `StateMachine` implementation. I
-  would like to offer a generic and opt-in solution by MicroRaft.
+  would like to offer a generic and opt-in solution by NanoRaft.
 
 - Witness replicas possibly via implementation of the [Pirogue, a lighter
   dynamic version of the Raft distributed consensus

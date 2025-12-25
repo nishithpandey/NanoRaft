@@ -1,8 +1,8 @@
 
 # Tutorial: Building an Atomic Register
 
-In this section, we will build an atomic register on top of MicroRaft to
-demonstrate how to implement and use MicroRaft's main abstractions. Our atomic
+In this section, we will build an atomic register on top of NanoRaft to
+demonstrate how to implement and use NanoRaft's main abstractions. Our atomic
 register will consist of a single value and only 3 operations: `set`,
 `compare-and-set`, and `get`. In order to keep things simple, we will not run
 our Raft group in a distributed setting. Instead, will run each Raft node on a
@@ -13,8 +13,8 @@ If you haven't read the [Main Abstractions](main-abstractions.md)
 section yet, I highly recommend you to read that section before this tutorial.
 
 All the code shown here are compiling and available in the <a
-href="https://github.com/MicroRaft/MicroRaft/tree/master/microraft-tutorial"
-target="_blank">MicroRaft Github repository</a>. You can clone the repository
+href="https://github.com/NanoRaft/NanoRaft/tree/master/nanoraft-tutorial"
+target="_blank">NanoRaft Github repository</a>. You can clone the repository
 and run the code samples on your machine to try each part yourself. I
 intentionally duplicated a lot of code in the test classes below to put all
 pieces together so that you can see what is going on without navigating through
@@ -25,18 +25,18 @@ Let's crank up the engine!
 ## 1. Implementing the Main Abstractions
 
 We will start with writing our <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/RaftEndpoint.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/RaftEndpoint.java"
 target="_blank">`RaftEndpoint`</a>, <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/statemachine/StateMachine.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/statemachine/StateMachine.java"
 target="_blank">`StateMachine`</a> and <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/transport/Transport.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/transport/Transport.java"
 target="_blank">`Transport`</a> classes. We can use the default implementations
 of <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/executor/RaftNodeExecutor.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/executor/RaftNodeExecutor.java"
 target="_blank">`RaftNodeExecutor`</a>, <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/model/RaftModel.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/model/RaftModel.java"
 target="_blank">`RaftModel`</a> and <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/model/RaftModelFactory.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/model/RaftModelFactory.java"
 target="_blank">`RaftModelFactory`</a> abstractions. Since all of our Raft nodes
 will run in the same JVM process, we also don't need any serialization logic
 inside our `Transport` implementation. Last, we will also skip persistence. Our
@@ -49,7 +49,7 @@ nodes. Since we don't distribute our Raft nodes to multiple servers in this
 tutorial, we don't really need IP addresses. We can simply identify our Raft
 nodes with strings IDs and keep a mapping of unique IDs to Raft nodes so that we
 can deliver <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/model/message/RaftMessage.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/model/message/RaftMessage.java"
 target="_blank">`RaftMessage`</a> objects to target Raft nodes.
 
 Let's write a `LocalRaftEndpoint` class as below. We will generate unique Raft
@@ -58,8 +58,8 @@ endpoints via its static `LocalRaftEndpoint.newEndpoint()` method.
 <script src="https://gist.github.com/metanet/8d33a46f3c927bfd3af38fcde35d8161.js"></script>
   
 You can also see this class in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/main/java/io/microraft/tutorial/LocalRaftEndpoint.java"
-target="_blank">MicroRaft Github repository</a>.  
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/main/java/io/nanoraft/tutorial/LocalRaftEndpoint.java"
+target="_blank">NanoRaft Github repository</a>.  
   
 ### `StateMachine`
 
@@ -70,7 +70,7 @@ is shown below, does not have any execution and snapshotting logic for our
 atomic register.
 
 We implement <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/statemachine/StateMachine.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/statemachine/StateMachine.java"
 target="_blank">`StateMachine.getNewTermOperation()`</a> in our first version of
 state machine. This method returns an operation which will be committed every
 time a new leader is elected. This is actually related to the <a
@@ -84,14 +84,14 @@ extend this class to implement the missing functionality.
 <script src="https://gist.github.com/metanet/0acbb6426640f02fc88ad078fa8f59f2.js"></script>
 
 You can also see this class in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/main/java/io/microraft/tutorial/atomicregister/AtomicRegister.java"
-target="_blank">MicroRaft Github repository</a>.
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/main/java/io/nanoraft/tutorial/atomicregister/AtomicRegister.java"
+target="_blank">NanoRaft Github repository</a>.
 
 ### `Transport`
 
 We are almost there to run our first test for bootstrapping a Raft group and
 electing a leader. The only missing piece is <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/Transport/Transport.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/Transport/Transport.java"
 target="_blank">`Transport`</a>. Recall that `Transport` is responsible for
 sending Raft messages to other Raft nodes (serialization and networking). Since
 our Raft nodes will run in a single JVM process in this tutorial, we will skip
@@ -104,8 +104,8 @@ Our `LocalTransport` class is shown below.
 <script src="https://gist.github.com/metanet/efac8da9b92529391729221625b1ea75.js"></script>
 
 You can also see this class in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/main/java/io/microraft/tutorial/LocalTransport.java"
-target="_blank">MicroRaft Github repository</a>.
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/main/java/io/nanoraft/tutorial/LocalTransport.java"
+target="_blank">NanoRaft Github repository</a>.
 
 -----
 
@@ -119,13 +119,13 @@ leader. Let's write our first test.
 To run this test on your machine, try the following:
 
 ~~~~{.bash}
- $ gh repo clone MicroRaft/MicroRaft
- $ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.tutorial.LeaderElectionTest -DfailIfNoTests=false -Ptutorial
+ $ gh repo clone NanoRaft/NanoRaft
+ $ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.tutorial.LeaderElectionTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/test/java/io/microraft/tutorial/LeaderElectionTest.java"
-target="_blank">MicroRaft Github repository</a>.
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/test/java/io/nanoraft/tutorial/LeaderElectionTest.java"
+target="_blank">NanoRaft Github repository</a>.
 
 Ok. That is a big piece of code, but no worries. We will swallow it one piece at
 a time.
@@ -144,13 +144,13 @@ just adds a given Raft node to the *discovery maps* of the `LocalTransport`
 objects of the other Raft nodes.
 
 Once we create a Raft node via <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/RaftNode.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/RaftNode.java"
 target="_blank">`RaftNodeBuilder`</a>, its initial status is <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/RaftNodeStatus.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/RaftNodeStatus.java"
 target="_blank">`RaftNodeStatus.INITIAL`</a> and it does not execute the Raft
 consensus algorithm in this status. When `RaftNode.start()` is called, its
 status becomes <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/RaftNodeStatus.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/RaftNodeStatus.java"
 target="_blank">`RaftNodeStatus.ACTIVE`</a> and the Raft node internally submits
 a task to its `RaftNodeExecutor` to check if there is a leader. Since we are
 starting a new Raft group in this test, obviously there is no leader yet so our
@@ -241,7 +241,7 @@ node could become the leader.
 Now it is time to implement the `set`, `compare-and-set`, and `get` operations
 we talked before for our atomic register state machine. We must ensure that they
 are implemented in a deterministic way, because it is a fundamental requirement
-of the _replicated state machines_ approach. MicroRaft guarantees that each Raft
+of the _replicated state machines_ approach. NanoRaft guarantees that each Raft
 node will execute committed operations in the same order and since our
 operations run deterministically, we know that our state machines will end up
 with the same state after they execute committed operations.
@@ -253,7 +253,7 @@ tutorial. The new state machine class is below. We define an interface,
 state machine. There are 3 inner classes implementing this interface for the
 `set`, `compare-and-set` and `get` operations, and accompanying static methods
 to create their instances. We will pass an `AtomicRegisterOperation` object to
-`RaftNode.replicate()` and once it is committed by MicroRaft it will be passed
+`RaftNode.replicate()` and once it is committed by NanoRaft it will be passed
 to our state machine for execution. Our new state machine class handles these
 `AtomicRegisterOperation` objects in the `runOperation()` method. `set` updates
 the atomic register with the given value and returns its previous value,
@@ -265,7 +265,7 @@ logic is still missing and will be implemented later in the tutorial.
 <script src="https://gist.github.com/metanet/bda7eee359766b0a046b70dd262e2618.js"></script>
 
 You can also see this class in the 
-<a href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/main/java/io/microraft/tutorial/atomicregister/OperableAtomicRegister.java" target="_blank">MicroRaft Github repository</a>.
+<a href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/main/java/io/nanoraft/tutorial/atomicregister/OperableAtomicRegister.java" target="_blank">NanoRaft Github repository</a>.
 
 ### Committing operations
 
@@ -278,17 +278,17 @@ greater than the commit index of the previous operation.
 <script src="https://gist.github.com/metanet/96fc904c59da940b7e6b92a6b9e20778.js"></script>
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft
-$ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.tutorial.OperationCommitTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft
+$ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.tutorial.OperationCommitTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the 
-<a href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/test/java/io/microraft/tutorial/OperationCommitTest.java" target="_blank">MicroRaft Github repository</a>.
+<a href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/test/java/io/nanoraft/tutorial/OperationCommitTest.java" target="_blank">NanoRaft Github repository</a>.
 
 We use `RaftNode.replicate()` to replicate and commit operations on the Raft
 group. Most of the Raft node APIs, including `RaftNode.replicate()`, return
 `CompletableFuture<Ordered>` objects. For `RaftNode.replicate()`, <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/Ordered.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/Ordered.java"
 target="_blank">`Ordered`</a> provides return value of the executed operation
 and on which Raft log index the operation has been committed.
 
@@ -317,10 +317,10 @@ The last operation is a `get` to read the current value of the atomic register.
 
 If we call `RaftNode.replicate()` on a follower or candidate Raft node, the
 returned `CompletableFuture<Ordered>` object is simply notified with <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/exception/NotLeaderException.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/exception/NotLeaderException.java"
 target="_blank">`NotLeaderException`</a>, which also provides Raft endpoint of
 the leader Raft node. I am not going to build an advanced RPC system in front of
-MicroRaft here, but when we use MicroRaft in a distributed setting, we can build
+NanoRaft here, but when we use NanoRaft in a distributed setting, we can build
 a retry mechanism in the RPC layer to forward a failed operation to the Raft
 endpoint given in the exception. `NotLeaderException` may not specify any leader
 as well, for example if there is an ongoing leader election round, or the Raft
@@ -338,14 +338,14 @@ it means this approach would increase our disk usage unnecessarily because we
 will persist every new entry in the Raft log, even if it is a query. Actually,
 this is a sub-optimal approach.
 
-MicroRaft offers a separate API, `RaftNode.query()`, to handle queries more
+NanoRaft offers a separate API, `RaftNode.query()`, to handle queries more
 efficiently. There are <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/QueryPolicy.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/QueryPolicy.java"
 target="_blank">3 policies for queries</a>, each with a different consistency
 guarantee:
 
 * `QueryPolicy.LINEARIZABLE`: We can perform a linearizable query with this
-  policy. MicroRaft employs the optimization described in *§ 6.4:
+  policy. NanoRaft employs the optimization described in *§ 6.4:
   Processing read-only queries more efficiently* of <a
   href="https://github.com/ongardie/dissertation" target="_blank">the Raft
   dissertation</a> to preserve linearizability without growing the internal Raft
@@ -362,7 +362,7 @@ guarantee:
   query-workload by utilizing followers. We can also utilize `Ordered` to
   achive monotonic reads and read your writes.
 
-MicroRaft also employs leader stickiness and auto-demotion of leaders on loss of
+NanoRaft also employs leader stickiness and auto-demotion of leaders on loss of
 majority heartbeats. Leader stickiness means that a follower does not vote for
 another Raft node before the *leader heartbeat timeout* elapses after the last
 received *Append Entries* or *Install Snapshot* RPC. Dually, a leader Raft node
@@ -394,13 +394,13 @@ now. We will talk about it in a minute.
 To run this test on your machine, try the following:
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft
-$ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.tutorial.LinearizableQueryTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft
+$ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.tutorial.LinearizableQueryTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/test/java/io/microraft/tutorial/LinearizableQueryTest.java"
-target="_blank">MicroRaft Github repository</a>.
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/test/java/io/nanoraft/tutorial/LinearizableQueryTest.java"
+target="_blank">NanoRaft Github repository</a>.
 
 The output of the `sysout` lines are below:
 
@@ -409,7 +409,7 @@ set operation commit index: 2
 get operation commit index: 2, result: value
 ~~~~
 
-As we discussed above, MicroRaft handles linearizable queries without appending
+As we discussed above, NanoRaft handles linearizable queries without appending
 a new entry to the Raft log. So our query is executed at the last committed log
 index. That is why both commit indices are the same in the output.
 
@@ -417,14 +417,14 @@ index. That is why both commit indices are the same in the output.
 
 `QueryPolicy.LEADER_LEASE` and `QueryPolicy.EVENTUAL_CONSISTENCY` can be easily
 used if monotonicity is sufficient for query results. This is where <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/Ordered.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/Ordered.java"
 target="_blank">`Ordered`</a> comes in handy. A client can track commit indices
 observed via returned `Ordered` objects and use the greatest observed commit
 index to preserve monotonicity while issuing a local query to a Raft node. If
 the local commit index of a Raft node is smaller than the commit index passed to
 the `RaftNode.query()` call, the returned `CompletableFuture` object fails with
 <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/exception/LaggingCommitIndexException.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/exception/LaggingCommitIndexException.java"
 target="_blank">`LaggingCommitIndexException`</a>. This exception means that the
 state observed by the client is more up-to-date than the contacted Raft node's
 state. In this case, the client can retry its query on another Raft node. Please
@@ -464,13 +464,13 @@ hence our query fails with `LaggingCommitIndexException`.
 To run this test on your machine, try the following:
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft
-$ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.tutorial.MonotonicLocalQueryTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft
+$ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.tutorial.MonotonicLocalQueryTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/test/java/io/microraft/tutorial/MonotonicLocalQueryTest.java"
-target="_blank">MicroRaft Github repository</a>.
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/test/java/io/nanoraft/tutorial/MonotonicLocalQueryTest.java"
+target="_blank">NanoRaft Github repository</a>.
 
 -----
 
@@ -483,11 +483,11 @@ However, in a real-world system we cannot allow it to grow unboundedly. As the
 Raft log grows longer, it will consume more space both in memory and disk, and
 cause a lagging follower to catch up with the majority in a longer duration.
 Raft solves this problem by taking a snapshot of the state machine at current
-commit index and discarding all log entries up to it. MicroRaft implements
+commit index and discarding all log entries up to it. NanoRaft implements
 snapshotting by putting an upper bound on the number of log entries kept in Raft
 log. It takes a snapshot of the state machine at every `N` commits and shrinks
 the log. `N` is configurable via <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft/src/main/java/io/microraft/RaftConfig.java"
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft/src/main/java/io/nanoraft/RaftConfig.java"
 target="_blank">`RaftConfig.setCommitCountToTakeSnapshot()`</a>. A snapshot is
 represented as a list of chunks, where a chunk can be any object provided by the
 state machine. 
@@ -498,17 +498,17 @@ part, we will extend `OperableAtomicRegister` to implement these methods. Since
 our atomic register state machine consists of a single value, we just create a
 single snapshot chunk object in `takeSnapshot()`. Dually, to install a snapshot,
 we overwrite the value of the atomic register with the value present in the
-received snapshot chunk object. MicroRaft guarantees that commit index of an
+received snapshot chunk object. NanoRaft guarantees that commit index of an
 installed snapshot is always greater than the last commit index observed by the
 state machine.  
 
 <script src="https://gist.github.com/metanet/337f5bb9a8e82b637f9c66c46f6476be.js"></script>
 
 You can also see this class in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/main/java/io/microraft/tutorial/atomicregister/SnapshotableAtomicRegister.java"
-target="_blank">MicroRaft Github repository</a>.
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/main/java/io/nanoraft/tutorial/atomicregister/SnapshotableAtomicRegister.java"
+target="_blank">NanoRaft Github repository</a>.
 
-We have the following test to demonstrate how snapshotting works in MicroRaft.
+We have the following test to demonstrate how snapshotting works in NanoRaft.
 In `createRaftNode()`, we configure our Raft nodes to take a new snapshot at
 every 100 commits. Similar to what we did in the previous test, we block the
 communication between the leader and a follower, and fill up the leader's Raft
@@ -521,13 +521,13 @@ transferring the snapshot.
 To run this test on your machine, try the following:
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft
-$ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.tutorial.SnapshotInstallationTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft
+$ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.tutorial.SnapshotInstallationTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/test/java/io/microraft/tutorial/SnapshotInstallationTest.java"
-target="_blank">MicroRaft Github repository</a>.
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/test/java/io/nanoraft/tutorial/SnapshotInstallationTest.java"
+target="_blank">NanoRaft Github repository</a>.
 
 -----
 
@@ -539,7 +539,7 @@ group member lists.
 
 ### Changing the Raft group member list
 
-MicroRaft supports membership changes in Raft groups via
+NanoRaft supports membership changes in Raft groups via
 `RaftNode.changeMembership()`. Let's first see the rules to realize membership
 changes in Raft groups.
 
@@ -554,7 +554,7 @@ group and called *group members commit index*. Relatedly, when a membership
 change is triggered via `RaftNode.changeMembership()`, the current *group
 members commit index* must be provided.
 
-![](/img/info.png){: style="height:25px;width:25px"} Last, MicroRaft allows one
+![](/img/info.png){: style="height:25px;width:25px"} Last, NanoRaft allows one
 membership change at a time in a Raft group and more complex changes must be
 applied as a series of single changes.
 
@@ -568,13 +568,13 @@ quorum size of 5 = 3).
 To run this test on your machine, try the following:
 
 ~~~~{.bash}
-$ gh repo clone MicroRaft/MicroRaft
-$ cd MicroRaft && ./mvnw clean test -Dtest=io.microraft.tutorial.ChangeRaftGroupMemberListTest -DfailIfNoTests=false -Ptutorial
+$ gh repo clone NanoRaft/NanoRaft
+$ cd NanoRaft && ./mvnw clean test -Dtest=io.nanoraft.tutorial.ChangeRaftGroupMemberListTest -DfailIfNoTests=false -Ptutorial
 ~~~~
 
 You can also see it in the <a
-href="https://github.com/MicroRaft/MicroRaft/blob/master/microraft-tutorial/src/test/java/io/microraft/tutorial/ChangeRaftGroupMemberListTest.java"
-target="_blank">MicroRaft Github repository</a>.
+href="https://github.com/NanoRaft/NanoRaft/blob/master/nanoraft-tutorial/src/test/java/io/nanoraft/tutorial/ChangeRaftGroupMemberListTest.java"
+target="_blank">NanoRaft Github repository</a>.
 
 In this test, we create a new Raft endpoint, `endpoint4`, and add it to the Raft
 group in the following lines:
@@ -631,7 +631,7 @@ of the Raft group increases to 3. However, in real life use cases, Raft nodes
 can contain large state, and it may take some time until the new Raft node 
 catches up with the leader. Because of this, increasing the majority quorum 
 size may cause availability gaps if failures occur before the new Raft node
-catches up. To prevent this, MicroRaft offers another membership change mode,
+catches up. To prevent this, NanoRaft offers another membership change mode,
 `MembershipChangeMode.ADD_LEARNER`, to add new Raft nodes. With this mode, the
 new Raft node is added with the _learner_ role. Learner Raft nodes are excluded
 in majority calculations, hence adding a new learner Raft node to the Raft 
@@ -644,5 +644,5 @@ membership change: `MembershipChangeMode.ADD_OR_PROMOTE_TO_FOLLOWER`.
 
 ## What's next?
 
-In the next section, we will see how MicroRaft deals with failures. Just [keep
+In the next section, we will see how NanoRaft deals with failures. Just [keep
 calm and carry on](resiliency-and-fault-tolerance.md)!

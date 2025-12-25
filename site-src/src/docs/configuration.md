@@ -1,19 +1,19 @@
 
 # Configuration
 
-MicroRaft is a lightweight library with a minimal feature set, yet it allows
+NanoRaft is a lightweight library with a minimal feature set, yet it allows
 users to fine-tune its behaviour. In this section, we elaborate the
-configuration parameters available in MicroRaft.
+configuration parameters available in NanoRaft.
 
 `RaftConfig` is an immutable configuration class containing a number of
 parameters to tune behaviour of your Raft nodes. You can populate it via
-`RaftConfigBuilder`. Your software in which MicroRaft is embedded could be
-already working with HOCON or YAML files. MicroRaft also offers HOCON and YAML
+`RaftConfigBuilder`. Your software in which NanoRaft is embedded could be
+already working with HOCON or YAML files. NanoRaft also offers HOCON and YAML
 parsers to populate `RaftConfig` objects for such cases. Once you create a
 `RaftConfig` object either programmatically, or by parsing a HOCON or YAML file,
 you can provide it to `RaftNodeBuilder` while building `RaftNode` instances.
 
-You can see MicroRaft's configuration parameters below:
+You can see NanoRaft's configuration parameters below:
 
 * __Leader election timeout milliseconds:__
 
@@ -42,12 +42,12 @@ experienced that it causes false positives for failure detection of the leader
 when there is a hiccup in the system. When a leader slows down temporarily for
 any reason, its followers may start a new leader election round very quickly. To
 prevent such problems and allow users to tune availability of the system with
-more granularity, MicroRaft uses another parameter, _leader heartbeat timeout_,
+more granularity, NanoRaft uses another parameter, _leader heartbeat timeout_,
 to detect failure of the leader.
 
 Please note that having 2 timeout parameters does not make any difference in
 terms of the safety property. If both values are configured the same,
-MicroRaft's behaviour becomes identical to the behaviour described in the Raft
+NanoRaft's behaviour becomes identical to the behaviour described in the Raft
 paper.
 
 * __Leader heartbeat period seconds:__
@@ -70,7 +70,7 @@ field by considering the degree of concurrency of your clients.
 
 * __Append entries request batch size:__
 
-In MicroRaft, a leader Raft node sends log entries to its followers in batches
+In NanoRaft, a leader Raft node sends log entries to its followers in batches
 to improve the throughput. This configuration parameter specifies the maximum
 number of Raft log entries that can be sent as a batch in a  single append
 entries request.
@@ -89,7 +89,7 @@ Raft log entries are going to be kept in memory until the next snapshot.
 
 * __Transfer snapshots from followers:__
 
-MicroRaft's Raft log design ensures that every Raft node takes a snapshot at
+NanoRaft's Raft log design ensures that every Raft node takes a snapshot at
 exactly the same log index. This behaviour enables an optimization. When a
 follower falls far behind the Raft leader and needs to install a snapshot, it
 transfers the snapshot chunks from both the Raft leader and other followers in
@@ -106,12 +106,12 @@ state. `RaftNodeReport` objects can be used for monitoring a running Raft group.
 ## HOCON Configuration
 
 `RaftConfig` objects can be populated from HOCON files easily if you add the
-`microraft-hocon` dependency to your classpath.
+`nanoraft-hocon` dependency to your classpath.
 
 ~~~~{.xml}
 <dependency>
-	<groupId>io.microraft</groupId>
-	<artifactId>microraft-hocon</artifactId>
+	<groupId>io.nanoraft</groupId>
+	<artifactId>nanoraft-hocon</artifactId>
 	<version>0.1</version>
 </dependency>
 ~~~~
@@ -140,7 +140,7 @@ RaftConfig raftConfig = HoconRaftConfigParser.parseConfig(hoconConfig);
 ~~~~
 
 Please refer to
-[MicroRaft HOCON project](https://github.com/MicroRaft/MicroRaft/tree/master/microraft-hocon) 
+[NanoRaft HOCON project](https://github.com/NanoRaft/NanoRaft/tree/master/nanoraft-hocon) 
 for details.
 
 -----
@@ -148,12 +148,12 @@ for details.
 ## YAML Configuration
 
 Similarly, `RaftConfig` objects can be populated from YAML files easily if you
-add the `microraft-yaml` dependency to your classpath.
+add the `nanoraft-yaml` dependency to your classpath.
 
 ~~~~{.xml}
 <dependency>
-	<groupId>io.microraft</groupId>
-	<artifactId>microraft-yaml</artifactId>
+	<groupId>io.nanoraft</groupId>
+	<artifactId>nanoraft-yaml</artifactId>
 	<version>0.1</version>
 </dependency>
 ~~~~
@@ -179,6 +179,6 @@ String configFilePath = "...";
 RaftConfig raftConfig = YamlRaftConfigParser.parseFile(new Yaml(), configFilePath);
 ~~~~
 
-Please refer to [MicroRaft YAML
-project](https://github.com/MicroRaft/MicroRaft/tree/master/microraft-yaml) for
+Please refer to [NanoRaft YAML
+project](https://github.com/NanoRaft/NanoRaft/tree/master/nanoraft-yaml) for
 details.

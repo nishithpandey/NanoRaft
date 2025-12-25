@@ -1,11 +1,11 @@
-rootProject.name = "MicroRaft"
+rootProject.name = "NanoRaft"
 
-include("microraft")
-include("microraft-hocon")
-include("microraft-metrics")
-include("microraft-store-sqlite")
-include("microraft-tutorial")
-include("microraft-yaml")
+include("nanoraft")
+include("nanoraft-hocon")
+include("nanoraft-metrics")
+include("nanoraft-store-sqlite")
+include("nanoraft-tutorial")
+include("nanoraft-yaml")
 
 dependencyResolutionManagement {
     @Suppress("UnstableApiUsage") //
