@@ -1,4 +1,6 @@
-# Microraft
+# NanoRaft
+
+# TODO update documentation
 
 [![Maven Central](https://maven-badges.sml.io/maven-central/io.microraft/microraft/badge.svg?style=for-the-badge)](https://central.sonatype.com/artifact/io.microraft/microraft)
 [![javadoc](https://javadoc.io/badge2/io.microraft/microraft/javadoc.svg?style=for-the-badge)](https://javadoc.io/doc/io.microraft/microraft)
